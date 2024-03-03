@@ -1,0 +1,31 @@
+<li id="product-{{ product.id }}"
+    {% if product.items %}
+    class="smooth flex text-lg bg-green-100 border-green-300 border items-center justify-between bg-gray-100 p-3 rounded-lg mb-2"
+    {% else %}
+    class="smooth flex text-lg border items-center justify-between bg-gray-100 p-3 rounded-lg mb-2"
+    {% endif %}
+    >
+    <span
+    {% if product.items %}
+        class="w-full block added"
+        hx-post="/products/notneed"
+        hx-vals='{"product_id": {{ product.id }} }'
+        hx-trigger="click"
+        hx-target="#product-{{ product.id }}"
+        hx-swap="outerHTML"
+    {% else %}
+        class="w-full block"
+        hx-post="/products/needs"
+        hx-vals='{"product_id": {{ product.id }} }'
+        hx-trigger="click"
+        hx-target="#product-{{ product.id }}"
+        hx-swap="outerHTML"
+    {% endif %}>{{ product.name }}</span>
+    <button hx-get="/products/{{ product.id }}/edit"
+            hx-trigger="click"
+            hx-target="#product-{{ product.id }}"
+            hx-swap="outerHTML"
+            class="p-2 text-blue-400">
+        <i data-feather="edit" class="h-5 w-5"></i>
+    </button>
+</li>

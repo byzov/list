@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+    ports:
+      - "80:80"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=sqlite:///./app.db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+

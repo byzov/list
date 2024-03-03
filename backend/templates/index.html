@@ -1,0 +1,75 @@
+{% extends "_layout.html" %}
+{% block main_content %}
+
+<h1 class="text-4xl font-bold mt-5 mb-7">Список покупок</h1>
+
+<ul id="items" class="space-y-3 pb-20">
+{% for item in items %}
+    {% include 'partials/item.html' with context %}
+{% endfor %}
+</ul>
+
+<button onclick="redirectTo('/products/search?name=')"
+        class="fixed md:relative w-24 bottom-7 md:-bottom-5 left-1/2 transform -translate-x-1/2 py-2 px-4 bg-blue-500 text-white rounded-lg">
+    <i data-feather="plus" class="h-8 w-full"></i>
+</button>
+
+{% endblock %}
+
+{% block css %}
+<style>
+
+.delete {
+    text-decoration: line-through;
+}
+
+.item:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.item.htmx-swapping {
+    opacity: 0;
+    transition: all .3s ease-out;
+}
+
+</style>
+{% endblock %}
+
+{% block javascript %}
+
+<script>
+    // Слушать события после срабатывания hx-trigger
+    document.body.addEventListener('htmx:confirm', function(event) {
+        const item = event.detail.elt;
+
+        // Приостановка удаления с возможностью отмены
+        if (item.id.startsWith("item-")) {
+            event.preventDefault(); // Останавливаем отправку запроса
+
+            if (!item.classList.contains("delete")) {
+                item.classList.add("delete");
+
+                // Удаление элемента по истечении времени
+                const timer = setTimeout(() => {
+                    //console.log('DELETE');
+                    htmx.off(item, 'click', cancel);
+                    event.detail.issueRequest(); // Отправляем запрос
+                }, 1000);
+
+                // Отмена удаления элемента
+                function cancel() {
+                    //console.log('CANCEL');
+                    clearTimeout(timer);
+                    htmx.off(item, 'click', cancel);
+                    item.classList.remove("delete");
+                }
+
+                htmx.on(item, 'click', cancel);
+            }
+        }
+    });
+
+</script>
+
+{% endblock %}

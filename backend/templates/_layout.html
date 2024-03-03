@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>htmx Example</title>
+
+    <!-- Подключаем библиотеку htmx -->
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org/dist/htmx.min.js"></script>
+
+    <!-- Подключаем стили Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <!-- Подключаем Feather Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+
+    {% block css %}{% endblock %}
+
+    <style>
+        .container { max-width: 600px;}
+    </style>
+
+    <script>
+        function redirectTo(url) {
+            window.location.href = url;
+        }
+
+        function setFocus(el) {
+            const end = el.value.length;
+            el.setSelectionRange(end, end);
+            el.focus();
+        }
+    </script>
+</head>
+<body class="p-5 md:bg-gray-200 text-gray-700">
+    <div class="container mx-auto md:bg-gray-50 md:p-10">
+        {% block main_content %}{% endblock %}
+    </div>
+
+    {% block javascript %}{% endblock %}
+
+<script>
+    feather.replace();
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        feather.replace();
+    });
+</script>
+</body>
+</html>
+
+

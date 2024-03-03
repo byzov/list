@@ -1,0 +1,8 @@
+<li id="item-{{ item.id }}"
+    hx-trigger="click"
+    hx-delete="/items/{{ item.id }}"
+    hx-swap="delete swap:.3s"
+    hx-target="#item-{{ item.id }}"
+    class="overflow-hidden item flex items-center justify-between rounded-lg h-10">
+    <span class="text-xl">{{ item.product.name }}</span>
+</li>
