@@ -1,4 +1,5 @@
 import os
+import re
 from fastapi import FastAPI, HTTPException, Depends, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -14,6 +15,7 @@ templates = Jinja2Templates(directory="templates")
 # TODO Продумать индексы в таблицы
 # TODO Сохранять настройки сортировки в куках
 # TODO Добавить крестик в текстовое поле для очистки
+# TODO Подсвечивать подсроки в названии продукта при поиске
 # TODO 
 
 # FEATURE Отзывы о товарах
@@ -37,6 +39,7 @@ class Category(SQLModel, table=True):
 class Product(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     name: str
+    clear_name: str
     categoty_id: Optional[int] = Field(default=None, foreign_key="category.id")
     category: Optional[Category] = Relationship()
     items: 'Item' = Relationship()
@@ -65,6 +68,7 @@ def get_db():
 #
 
 # INDEX
+# TODO Сортировать по Product.clear_name
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, session: Session = Depends((get_db))):
     query = select(Item)
@@ -75,7 +79,7 @@ async def index(request: Request, session: Session = Depends((get_db))):
 # PRODUCTS
 @app.get("/products/search", response_class=HTMLResponse)
 async def product_search(request: Request, session: Session = Depends((get_db))):
-    query = select(Product)
+    query = select(Product).order_by(Product.clear_name)
     products = session.exec(query).all()
     return templates.TemplateResponse('search.html',
                                       {"request": request, "products": products})
@@ -101,9 +105,10 @@ async def product_search(request: Request, session: Session = Depends((get_db)))
 # TODO 
 
 # GET products
+# TODO prefetch данных по item
 @app.get("/products/")
 async def get_products(request: Request, name: str, session: Session = Depends((get_db))):
-    query = select(Product).where(Product.name.like(f'%{name}%'))
+    query = select(Product).where(Product.clear_name.like(f'%{name}%'.lower()))
     products = session.exec(query).all()
     exists = session.exec(select(Product).where(Product.name == name)).first()
     return templates.TemplateResponse('partials/products.html',
@@ -134,6 +139,8 @@ async def update_product(product_id: int, request: Request, name: str = Form(...
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
+    clear_name = re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
+    product.clear_name = clear_name
     product.name = name
 
     session.add(product)
@@ -144,12 +151,13 @@ async def update_product(product_id: int, request: Request, name: str = Form(...
 # POST product
 @app.post("/products/quick_add", response_class=HTMLResponse)
 async def quick_add_product(request: Request, name: str = Form(...), session: Session = Depends((get_db))):
-    product = Product(name=name)
+    clear_name = re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
+    product = Product(name=name, clear_name=clear_name)
     session.add(product)
     session.commit()
     session.refresh(product)
 
-    query = select(Product).where(Product.name.like(f'%{name}%'))
+    query = select(Product).where(Product.clear_name.like(f'%{name}%'.lower()))
     products = session.exec(query).all()
     return templates.TemplateResponse('partials/products.html', {"request": request, "products": products})
 
