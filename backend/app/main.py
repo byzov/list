@@ -63,6 +63,9 @@ def get_db():
     finally:
         session.close()
 
+def clear(name: str):
+    return re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
+
 #
 # Страницы
 #
@@ -108,7 +111,7 @@ async def product_search(request: Request, session: Session = Depends((get_db)))
 # TODO prefetch данных по item
 @app.get("/products/")
 async def get_products(request: Request, name: str, session: Session = Depends((get_db))):
-    query = select(Product).where(Product.clear_name.like(f'%{name}%'.lower()))
+    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear(name)))).order_by(Product.clear_name)
     products = session.exec(query).all()
     exists = session.exec(select(Product).where(Product.name == name)).first()
     return templates.TemplateResponse('partials/products.html',
@@ -139,7 +142,7 @@ async def update_product(product_id: int, request: Request, name: str = Form(...
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    clear_name = re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
+    clear_name = clear(name)
     product.clear_name = clear_name
     product.name = name
 
@@ -151,13 +154,13 @@ async def update_product(product_id: int, request: Request, name: str = Form(...
 # POST product
 @app.post("/products/quick_add", response_class=HTMLResponse)
 async def quick_add_product(request: Request, name: str = Form(...), session: Session = Depends((get_db))):
-    clear_name = re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
+    clear_name = clear(name)
     product = Product(name=name, clear_name=clear_name)
     session.add(product)
     session.commit()
     session.refresh(product)
 
-    query = select(Product).where(Product.clear_name.like(f'%{name}%'.lower()))
+    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear(name))))
     products = session.exec(query).all()
     return templates.TemplateResponse('partials/products.html', {"request": request, "products": products})
 
