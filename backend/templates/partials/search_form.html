@@ -1,0 +1,25 @@
+<div id="search">
+    <div class="mb-5 relative">
+        <input id="searchInput"
+            hx-get="/products/"
+            hx-target="#search"
+            hx-trigger="keyup"
+            hx-swap="morphdom"
+            autocomplete="off"
+            type="text"
+            name="name"
+            value="{{ name }}"
+            placeholder="Фильтр по названию..."
+            class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:outline-none focus:ring focus:border-blue-500">
+        {% if name %}
+            <button class="clear-icon text-gray-500"
+                    hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup');">
+                <i data-feather="x" class="h-5 w-5"></i>
+            </button>
+        {% endif %}
+    </div>
+
+    {% include 'partials/products.html' with context %}
+</div>
+
+
