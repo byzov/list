@@ -16,6 +16,9 @@ templates = Jinja2Templates(directory="templates")
 # TODO Сохранять настройки сортировки в куках
 # TODO Добавить крестик в текстовое поле для очистки
 # TODO Подсвечивать подсроки в названии продукта при поиске
+# TODO Добавить возможность скрытия продуктов, которые уже в списке
+# TODO Добавить возможно комментировать item
+# TODO Заготовки для добавления нескольких товаров (рецепт, мероприятие и пр.)
 # TODO 
 
 # FEATURE Отзывы о товарах
@@ -84,8 +87,8 @@ async def index(request: Request, session: Session = Depends((get_db))):
 async def product_search(request: Request, session: Session = Depends((get_db))):
     query = select(Product).order_by(Product.clear_name)
     products = session.exec(query).all()
-    return templates.TemplateResponse('search.html',
-                                      {"request": request, "products": products})
+    context = {"request": request, "products": products}
+    return templates.TemplateResponse('search.html', context)
 
 #
 # Categories
@@ -114,8 +117,7 @@ async def get_products(request: Request, name: str, session: Session = Depends((
     query = select(Product).where(Product.clear_name.like('%{}%'.format(clear(name)))).order_by(Product.clear_name)
     products = session.exec(query).all()
     exists = session.exec(select(Product).where(Product.name == name)).first()
-    return templates.TemplateResponse('partials/products.html',
-                                      {"request": request, "products": products, "name": name, "exists": exists})
+    return templates.TemplateResponse('partials/search_form.html', {"request": request, "products": products, "name": name, "exists": exists})
 
 # GET product
 @app.get("/products/{product_id}")
