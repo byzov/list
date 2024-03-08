@@ -3,7 +3,8 @@
         <input id="searchInput"
             hx-get="/products/"
             hx-target="#search"
-            hx-trigger="keyup"
+            hx-trigger="keyup delay:700ms changed"
+            hx-on::before-request="htmx.trigger('#searchInput', 'htmx:abort');"
             hx-swap="morphdom"
             autocomplete="off"
             type="text"
@@ -13,7 +14,7 @@
             class="w-full border border-gray-300 px-3 py-2 rounded-lg focus:outline-none focus:ring focus:border-blue-500">
         {% if name %}
             <button class="clear-icon text-gray-500"
-                    hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup');">
+                    hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup'); htmx.find('#searchInput').focus()">
                 <i data-feather="x" class="h-5 w-5"></i>
             </button>
         {% endif %}
