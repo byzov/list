@@ -13,8 +13,8 @@ engine = create_engine(os.getenv("DATABASE_URL"), echo=True)
 templates = Jinja2Templates(directory="templates")
 
 
-# TODO: Добавить возможно комментировать item
 # TODO: Отправлять с бэка событие обновить список если добавлен item
+# TODO: Добавить в очистку имени замену ё на е
 
 # TODO: Продумать индексы в таблицы
 # IDEA: Сохранять настройки сортировки в куках
@@ -51,6 +51,7 @@ class Product(SQLModel, table=True):
 
 class Item(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
+    description: Optional[str]
     product_id: int = Field(default=None, foreign_key="product.id")
     product: Product = Relationship()
 
@@ -139,18 +140,25 @@ async def edit_product(product_id: int, request: Request, session: Session = Dep
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+
     return templates.TemplateResponse('partials/product_form.html', {"request": request, "product": product})
 
 
 # PUT product
 @app.patch("/products/{product_id}", response_class=HTMLResponse)
-async def update_product(product_id: int, request: Request, name: str = Form(...), session: Session = Depends((get_db))):
+async def update_product(
+        product_id: int,
+        request: Request,
+        name: str = Form(...),
+        description: str = Form(...),
+        session: Session = Depends((get_db))):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
     product.clear_name = clear(name)
     product.name = name
+    product.items.description = description
 
     session.add(product)
     session.commit()

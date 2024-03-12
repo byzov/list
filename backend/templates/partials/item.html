@@ -3,6 +3,9 @@
     hx-delete="/items/{{ item.id }}"
     hx-swap="delete swap:.3s"
     hx-target="#item-{{ item.id }}"
-    class="overflow-hidden item flex items-center justify-between rounded-lg h-10">
+    class="item items-center justify-between rounded-lg py-2">
     <span class="text-xl">{{ item.product.name }}</span>
+    {% if item.description %}
+    <span class="text-xl italic text-gray-400">{{ item.description }}</span>
+    {% endif %}
 </li>
