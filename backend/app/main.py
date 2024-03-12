@@ -191,7 +191,7 @@ async def update_product(
 
     product.clear_name = clear(name)
     product.name = name
-    if product.items and description:
+    if product.items:
         product.items.description = description
 
     session.add(product)
