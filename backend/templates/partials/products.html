@@ -1,6 +1,4 @@
-<div id="products">
-    
-    {% if name and not exists %}
+{% if name and not exists %}
     <form id="itemForm"
           hx-post="/products/quick_add"
           hx-swap="outerHTML"
@@ -9,12 +7,9 @@
         <input id="searchInput" type="hidden" name="name" value="{{ name }}">
         <button class="mb-5 py-2 px-4 bg-blue-500 text-white rounded-lg w-full">Добавить</button>
     </form>
-    {% endif %}
-
-    <ul>
+{% endif %}
+<ul>
     {% for product in products %}
         {% include 'partials/product.html' with context %}
     {% endfor %}
-    </ul>
-
-</div>
+</ul>

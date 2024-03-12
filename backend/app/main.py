@@ -1,34 +1,35 @@
 import os
 import re
-from fastapi import FastAPI, HTTPException, Depends, Request, Form
-from fastapi.templating import Jinja2Templates
+from typing import List, Optional
+
+from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
-from typing import Optional, List
-from sqlmodel import Field, SQLModel, Session, create_engine, select, Relationship
+from fastapi.templating import Jinja2Templates
+from sqlmodel import (Field, Relationship, Session, SQLModel, create_engine,
+                      select)
 
 app = FastAPI()
 engine = create_engine(os.getenv("DATABASE_URL"), echo=True)
 templates = Jinja2Templates(directory="templates")
 
-# TODO Отправлять с бэка событие обновить список если добавлен item
-# TODO Добавить логирование покупок
-# TODO Продумать индексы в таблицы
-# TODO Сохранять настройки сортировки в куках
-# TODO Добавить крестик в текстовое поле для очистки
-# TODO Подсвечивать подсроки в названии продукта при поиске
-# TODO Добавить возможность скрытия продуктов, которые уже в списке
-# TODO Добавить возможно комментировать item
-# TODO Заготовки для добавления нескольких товаров (рецепт, мероприятие и пр.)
-# TODO 
 
-# FEATURE Отзывы о товарах
-# FEATURE Авторизация
-# FEATURE Wishlist
-# FEATURE Формирование корзины в онлайн-магазине
-# FEATURE Привязка товаров из онлайн-магазина
-# FEATURE Рекомендации
-# FEATURE Выводить на главном экране рекомандации, если список пуст
-# FEATURE Темная тема
+# TODO: Добавить возможно комментировать item
+# TODO: Отправлять с бэка событие обновить список если добавлен item
+
+# TODO: Продумать индексы в таблицы
+# IDEA: Сохранять настройки сортировки в куках
+# IDEA: Подсвечивать подсроки в названии продукта при поиске
+# IDEA: Добавить возможность скрытия продуктов, которые уже в списке
+# FEATURE: Логирование покупок
+# FEATURE: Заготовки для добавления нескольких товаров (рецепт, мероприятие и пр.)
+# FEATURE: Отзывы о товарах
+# FEATURE: Авторизация
+# FEATURE: Wishlist
+# FEATURE: Формирование корзины в онлайн-магазине
+# FEATURE: Привязка товаров из онлайн-магазина
+# FEATURE: Рекомендации
+# FEATURE: Выводить на главном экране рекомандации, если список пуст
+# FEATURE: Темная тема
 
 #
 # Models
@@ -67,6 +68,7 @@ def get_db():
         session.close()
 
 def clear(name: str):
+    """Очистка имени от смайликов и не нужных символов"""
     return re.sub('[^A-Za-zА-Яа-я0-9 ]+', '', name).lower().strip()
 
 #
@@ -74,7 +76,7 @@ def clear(name: str):
 #
 
 # INDEX
-# TODO Сортировать по Product.clear_name
+# TODO: Сортировать по Product.clear_name
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, session: Session = Depends((get_db))):
     query = select(Item)
@@ -93,32 +95,35 @@ async def product_search(request: Request, session: Session = Depends((get_db)))
 #
 # Categories
 #
-# TODO Ошраничить добавление товаров с одним названием + категорией
-# TODO Реализовать добавление категории к продукту
-# TODO Реализовать добавление категорий
-# TODO Добавить фильтрацию по катеории
-# TODO Добавить на главную филтр по категориям
-# TODO Сделать сортировку по категории и имени
-# TODO Сделать чтобы смайлки выделялись в отдельное поле
-# TODO Если выбран фильтр категории, то продукт добавляем в эту категорию
+# TODO: Ошраничить добавление товаров с одним названием + категорией
+# TODO: Реализовать добавление категории к продукту
+# TODO: Реализовать добавление категорий
+# TODO: Добавить фильтрацию по катеории
+# TODO: Добавить на главную филтр по категориям
+# TODO: Сделать сортировку по категории и имени
+# TODO: Сделать чтобы смайлки выделялись в отдельное поле
+# TODO: Если выбран фильтр категории, то продукт добавляем в эту категорию
 
 #
 # Products
 #
-# TODO Разобраться с name в /products/ и /products/search, нужно чтобы проставлялся url
-# TODO Очищать поле после добавления продукта и скрол до товара
-# TODO Добавить подтверждение при удалении товара
-# TODO 
+# TODO: Разобраться с name в /products/ и /products/search, нужно чтобы проставлялся url
+# TODO: Очищать поле после добавления продукта и скрол до товара
+# TODO: Добавить подтверждение при удалении товара
+# TODO: 
 
 # GET products
-# TODO prefetch данных по item
+# TODO: prefetch данных по item
 @app.get("/products/")
 async def get_products(request: Request, name: str, session: Session = Depends((get_db))):
-    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear(name)))).order_by(Product.clear_name)
+    query = select(Product) \
+                .where(Product.clear_name.like('%{}%'.format(clear(name)))) \
+                .order_by(Product.clear_name)
     products = session.exec(query).all()
     exists = session.exec(select(Product).where(Product.name == name)).first()
     return templates.TemplateResponse('partials/search_form.html', {"request": request, "products": products, "name": name, "exists": exists})
 
+ 
 # GET product
 @app.get("/products/{product_id}")
 async def get_product(product_id: int, request: Request, session: Session = Depends((get_db))):
@@ -144,8 +149,7 @@ async def update_product(product_id: int, request: Request, name: str = Form(...
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    clear_name = clear(name)
-    product.clear_name = clear_name
+    product.clear_name = clear(name)
     product.name = name
 
     session.add(product)
@@ -162,7 +166,7 @@ async def quick_add_product(request: Request, name: str = Form(...), session: Se
     session.commit()
     session.refresh(product)
 
-    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear(name))))
+    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear_name)))
     products = session.exec(query).all()
     return templates.TemplateResponse('partials/products.html', {"request": request, "products": products})
 

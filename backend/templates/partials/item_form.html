@@ -1,4 +1,8 @@
-<form hx-patch="/items/{{ item.id }}" hx-target="#item-{{ item.id }}" hx-trigger="submit">
+<form hx-patch="/items/{{ item.id }}"
+      hx-target="#item-{{ item.id }}"
+      hx-trigger="submit">
     <input autocomplete="off" type="text" name="text" value="{{ item.text }}">
-    <a hx-trigger="click" hx-get="/items/{{ item.id }}" hx-target="#item-{{ item.id }}">Отмена</a>
+    <a hx-trigger="click"
+       hx-get="/items/{{ item.id }}"
+       hx-target="#item-{{ item.id }}">Отмена</a>
 </form>

@@ -1,23 +1,27 @@
-<li id="product-{{ product.id }}" hx-on::load="setFocus( htmx.find(event.detail.elt, 'input') )" class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}bg-green-100 border-green-300 border{% endif %}">
+<li id="product-{{ product.id }}"
+    hx-on::load="setFocus( htmx.find(event.detail.elt, 'input') )"
+    class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}bg-green-100 border-green-300 border{% endif %}">
     <form id="productForm"
-        hx-patch="/products/{{ product.id }}"
-        hx-swap="outerHTML"
-        hx-target="#product-{{ product.id }}"
-        hx-trigger="submit"
-        class="items-center justify-between w-full">
-        <input id="nameInput" autocomplete="off" type="text" name="name" value="{{ product.name }}"
-               class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg"
-               >
-
+          hx-patch="/products/{{ product.id }}"
+          hx-swap="outerHTML"
+          hx-target="#product-{{ product.id }}"
+          hx-trigger="submit"
+          class="items-center justify-between w-full">
+        <input id="nameInput"
+               autocomplete="off"
+               type="text"
+               name="name"
+               value="{{ product.name }}"
+               class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg">
         <div class="flex m-2">
             <button class="flex-auto py-2 px-4 bg-green-500 text-white rounded-lg mr-2">Сохранить</button>
-
             <button hx-get="/products/{{ product.id }}"
                     hx-trigger="click"
                     hx-target="#product-{{ product.id }}"
                     hx-swap="outerHTML"
-                    class="flex-auto py-2 px-4 bg-blue-500 text-white rounded-lg mr-2">Отмена</button>
-
+                    class="flex-auto py-2 px-4 bg-blue-500 text-white rounded-lg mr-2">
+                Отмена
+            </button>
             <button hx-delete="/products/{{ product.id }}"
                     hx-swap="delete"
                     hx-trigger="click"
@@ -26,6 +30,5 @@
                 <i data-feather="trash-2" class="h-5 w-5"></i>
             </button>
         </div>
-
     </form>
 </li>
