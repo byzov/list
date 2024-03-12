@@ -82,12 +82,19 @@ def clear(name: str):
 async def index(request: Request, session: Session = Depends((get_db))):
     query = select(Item)
     items = session.exec(query).all()
-    return templates.TemplateResponse('index.html', {"request": request, "items": items})
+
+    context = {
+        "request": request,
+        "items": items
+    }
+    return templates.TemplateResponse('index.html', context)
 
 
 # PRODUCTS
 @app.get("/products/search", response_class=HTMLResponse)
-async def product_search(request: Request, session: Session = Depends((get_db))):
+async def product_search(
+        request: Request,
+        session: Session = Depends((get_db))):
     query = select(Product).order_by(Product.clear_name)
     products = session.exec(query).all()
     context = {"request": request, "products": products}
@@ -116,32 +123,58 @@ async def product_search(request: Request, session: Session = Depends((get_db)))
 # GET products
 # TODO: prefetch данных по item
 @app.get("/products/")
-async def get_products(request: Request, name: str, session: Session = Depends((get_db))):
+async def get_products(
+        request: Request,
+        name: str,
+        session: Session = Depends((get_db))):
     query = select(Product) \
                 .where(Product.clear_name.like('%{}%'.format(clear(name)))) \
                 .order_by(Product.clear_name)
     products = session.exec(query).all()
-    exists = session.exec(select(Product).where(Product.name == name)).first()
-    return templates.TemplateResponse('partials/search_form.html', {"request": request, "products": products, "name": name, "exists": exists})
+    exists = session.exec(select(Product) \
+                          .where(Product.name == name)).first()
+
+    context = {
+        "request": request,
+        "products": products,
+        "name": name,
+        "exists": exists
+    }
+    return templates.TemplateResponse('partials/search_form.html', context)
 
  
 # GET product
 @app.get("/products/{product_id}")
-async def get_product(product_id: int, request: Request, session: Session = Depends((get_db))):
+async def get_product(
+        product_id: int,
+        request: Request,
+        session: Session = Depends((get_db))):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return templates.TemplateResponse('partials/product.html', {"request": request, "product": product})
+
+    context = {
+        "request": request,
+        "product": product
+    }
+    return templates.TemplateResponse('partials/product.html', context)
 
 
 # GET product form
 @app.get("/products/{product_id}/edit")
-async def edit_product(product_id: int, request: Request, session: Session = Depends((get_db))):
+async def edit_product(
+        product_id: int,
+        request: Request,
+        session: Session = Depends((get_db))):
     product = session.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    return templates.TemplateResponse('partials/product_form.html', {"request": request, "product": product})
+    context = {
+        "request": request,
+        "product": product
+    }
+    return templates.TemplateResponse('partials/product_form.html', context)
 
 
 # PUT product
@@ -164,11 +197,19 @@ async def update_product(
     session.add(product)
     session.commit()
     session.refresh(product)
-    return templates.TemplateResponse('partials/product.html', {"request": request, "product": product})
+
+    context = {
+        "request": request,
+        "product": product
+    }
+    return templates.TemplateResponse('partials/product.html', context)
 
 # POST product
 @app.post("/products/quick_add", response_class=HTMLResponse)
-async def quick_add_product(request: Request, name: str = Form(...), session: Session = Depends((get_db))):
+async def quick_add_product(
+        request: Request,
+        name: str = Form(...),
+        session: Session = Depends((get_db))):
     clear_name = clear(name)
     product = Product(name=name, clear_name=clear_name)
     session.add(product)
@@ -177,12 +218,20 @@ async def quick_add_product(request: Request, name: str = Form(...), session: Se
 
     query = select(Product).where(Product.clear_name.like('%{}%'.format(clear_name)))
     products = session.exec(query).all()
-    return templates.TemplateResponse('partials/products.html', {"request": request, "products": products})
+    context = {
+        "request": request,
+        "products": products
+    }
+    return templates.TemplateResponse('partials/products.html', context)
 
 
 # DELETE product
+# TODO: Отдавать HTML в ответе
 @app.delete("/products/{product_id}")
-async def delete_product(product_id: int, request: Request, session: Session = Depends((get_db))):
+async def delete_product(
+        product_id: int,
+        request: Request,
+        session: Session = Depends((get_db))):
     query = select(Product).where(Product.id == product_id)
     product = session.exec(query).first()
     session.delete(product)
@@ -194,19 +243,29 @@ async def delete_product(product_id: int, request: Request, session: Session = D
 
 # POST products
 @app.post("/products/needs", response_class=HTMLResponse)
-async def product_needed(request: Request, product_id: int = Form(...), session: Session = Depends((get_db))):
+async def product_needed(
+        request: Request,
+        product_id: int = Form(...),
+        session: Session = Depends((get_db))):
     item = Item(product_id=product_id)
     session.add(item)
     session.commit()
     session.refresh(item)
 
     product = session.get(Product, product_id)
-    return templates.TemplateResponse('partials/product.html', {"request": request, "product": product})
+    context = {
+        "request": request,
+        "product": product
+    }
+    return templates.TemplateResponse('partials/product.html', context)
 
 
 # POST products
 @app.post("/products/notneed", response_class=HTMLResponse)
-async def product_notneed(request: Request, product_id: int = Form(...), session: Session = Depends((get_db))):
+async def product_notneed(
+        request: Request,
+        product_id: int = Form(...),
+        session: Session = Depends((get_db))):
     query = select(Item).where(Item.product_id == product_id)
     item = session.exec(query).first()
     session.delete(item)
@@ -215,7 +274,11 @@ async def product_notneed(request: Request, product_id: int = Form(...), session
         raise HTTPException(status_code=404, detail="Product not found")
 
     product = session.get(Product, product_id)
-    return templates.TemplateResponse('partials/product.html', {"request": request, "product": product})
+    context = {
+        "request": request,
+        "product": product
+    }
+    return templates.TemplateResponse('partials/product.html', context)
 
 
 #
@@ -224,17 +287,28 @@ async def product_notneed(request: Request, product_id: int = Form(...), session
 
 # POST item
 @app.post("/items/", response_class=HTMLResponse)
-async def create_item(request: Request, text: str = Form(...), session: Session = Depends((get_db))):
+async def create_item(
+        request: Request,
+        text: str = Form(...),
+        session: Session = Depends((get_db))):
     item = Item(text=text)
     session.add(item)
     session.commit()
     session.refresh(item)
-    return templates.TemplateResponse('partials/item.html', {"request": request, "item": item})
+
+    context = {
+        "request": request,
+        "item": item
+    }
+    return templates.TemplateResponse('partials/item.html', context)
 
 
 # GET items
+# TODO: Удалить метод если не нужен
 @app.get("/items/")
-async def get_items(request: Request, session: Session = Depends((get_db))):
+async def get_items(
+        request: Request,
+        session: Session = Depends((get_db))):
     query = select(Item)
     items = session.exec(query).all()
     return items
@@ -242,26 +316,46 @@ async def get_items(request: Request, session: Session = Depends((get_db))):
 
 # GET item
 @app.get("/items/{item_id}")
-async def get_item(item_id: int, request: Request, session: Session = Depends((get_db))):
+async def get_item(
+        item_id: int,
+        request: Request,
+        session: Session = Depends((get_db))):
     query = select(Item).where(Item.id == item_id)
     item = session.exec(query).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    return templates.TemplateResponse('partials/item.html', {"request": request, "item": item})
+
+    context = {
+        "request": request,
+        "item": item
+    }
+    return templates.TemplateResponse('partials/item.html', context)
 
 
 # GET item
 @app.get("/items/{item_id}/edit", response_class=HTMLResponse)
-async def form_item(item_id: int, request: Request, session: Session = Depends((get_db))):
+async def form_item(
+        item_id: int,
+        request: Request,
+        session: Session = Depends((get_db))):
     item = session.get(Item, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    return templates.TemplateResponse('partials/item_form.html', {"request": request, "item": item})
+
+    context = {
+        "request": request,
+        "item": item
+    }
+    return templates.TemplateResponse('partials/item_form.html', context)
 
 
 # PUT item
 @app.patch("/items/{item_id}", response_class=HTMLResponse)
-async def update_item(item_id: int, request: Request, text: str = Form(...), session: Session = Depends((get_db))):
+async def update_item(
+        item_id: int,
+        request: Request,
+        text: str = Form(...),
+        session: Session = Depends((get_db))):
     item = session.get(Item, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
@@ -271,10 +365,16 @@ async def update_item(item_id: int, request: Request, text: str = Form(...), ses
     session.add(item)
     session.commit()
     session.refresh(item)
-    return templates.TemplateResponse('partials/item.html', {"request": request, "item": item})
+    
+    context = {
+        "request": request,
+        "item": item
+    }
+    return templates.TemplateResponse('partials/item.html', context)
 
 
 # DELETE item
+# TODO: Отдавать HTML в ответе
 @app.delete("/items/{item_id}")
 async def delete_item(item_id: int, request: Request, session: Session = Depends((get_db))):
     query = select(Item).where(Item.id == item_id)
