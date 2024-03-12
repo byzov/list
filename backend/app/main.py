@@ -150,7 +150,7 @@ async def update_product(
         product_id: int,
         request: Request,
         name: str = Form(...),
-        description: str = Form(...),
+        description: str = Form(None),
         session: Session = Depends((get_db))):
     product = session.get(Product, product_id)
     if not product:
@@ -158,7 +158,8 @@ async def update_product(
 
     product.clear_name = clear(name)
     product.name = name
-    product.items.description = description
+    if product.items and description:
+        product.items.description = description
 
     session.add(product)
     session.commit()
