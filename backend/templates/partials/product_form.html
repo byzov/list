@@ -1,5 +1,9 @@
 <li id="product-{{ product.id }}"
-    hx-on::load="setFocus( htmx.find(event.detail.elt, 'input') )"
+    {% if product.items %}
+    hx-on::load="setFocus( htmx.find(event.detail.elt, '#descriptionInput') )"
+    {% else %}
+    hx-on::load="setFocus( htmx.find(event.detail.elt, '#nameInput') )"
+    {% endif %}
     class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}bg-green-100 border-green-300 border{% endif %}">
     <form id="productForm"
           hx-patch="/products/{{ product.id }}"
@@ -14,7 +18,7 @@
                value="{{ product.name }}"
                class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg">
         {% if product.items %}
-        <input id="nameInput"
+        <input id="descriptionInput"
                autocomplete="off"
                type="text"
                name="description"
