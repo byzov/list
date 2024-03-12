@@ -15,11 +15,17 @@ templates = Jinja2Templates(directory="templates")
 
 # TODO: Отправлять с бэка событие обновить список если добавлен item
 # TODO: Добавить в очистку имени замену ё на е
-
 # TODO: Продумать индексы в таблицы
-# IDEA: Сохранять настройки сортировки в куках
-# IDEA: Подсвечивать подсроки в названии продукта при поиске
-# IDEA: Добавить возможность скрытия продуктов, которые уже в списке
+
+# FEATURE: Категории
+# - [ ] Ошраничить добавление товаров с одним названием + категорией
+# - [ ] Реализовать добавление категории к продукту
+# - [ ] Реализовать добавление категорий
+# - [ ] Добавить фильтрацию по категории
+# - [ ] Добавить на главную филтр по категориям
+# - [ ] Сделать сортировку по категории и имени
+# - [ ] Сделать чтобы смайлки выделялись в отдельное поле
+# - [ ] Если выбран фильтр категории, то продукт добавляем в эту категорию
 # FEATURE: Логирование покупок
 # FEATURE: Заготовки для добавления нескольких товаров (рецепт, мероприятие и пр.)
 # FEATURE: Отзывы о товарах
@@ -30,6 +36,11 @@ templates = Jinja2Templates(directory="templates")
 # FEATURE: Рекомендации
 # FEATURE: Выводить на главном экране рекомандации, если список пуст
 # FEATURE: Темная тема
+# IDEA: Сохранять настройки сортировки в куках
+# IDEA: Подсвечивать подсроки в названии продукта при поиске
+# IDEA: Добавить возможность скрытия продуктов, которые уже в списке
+# IDEA: Очищать поле после добавления продукта и скрол до товара
+# IDEA: Добавить подтверждение при удалении товара
 
 #
 # Models
@@ -80,8 +91,7 @@ def clear(name: str):
 # TODO: Сортировать по Product.clear_name
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, session: Session = Depends((get_db))):
-    query = select(Item)
-    items = session.exec(query).all()
+    items = session.exec(select(Item)).all()
 
     context = {
         "request": request,
@@ -91,6 +101,7 @@ async def index(request: Request, session: Session = Depends((get_db))):
 
 
 # PRODUCTS
+# TODO: Разобраться с name в /products/ и /products/search, нужно чтобы проставлялся url
 @app.get("/products/search", response_class=HTMLResponse)
 async def product_search(
         request: Request,
@@ -103,30 +114,18 @@ async def product_search(
 #
 # Categories
 #
-# TODO: Ошраничить добавление товаров с одним названием + категорией
-# TODO: Реализовать добавление категории к продукту
-# TODO: Реализовать добавление категорий
-# TODO: Добавить фильтрацию по катеории
-# TODO: Добавить на главную филтр по категориям
-# TODO: Сделать сортировку по категории и имени
-# TODO: Сделать чтобы смайлки выделялись в отдельное поле
-# TODO: Если выбран фильтр категории, то продукт добавляем в эту категорию
 
 #
 # Products
 #
-# TODO: Разобраться с name в /products/ и /products/search, нужно чтобы проставлялся url
-# TODO: Очищать поле после добавления продукта и скрол до товара
-# TODO: Добавить подтверждение при удалении товара
-# TODO: 
 
 # GET products
-# TODO: prefetch данных по item
 @app.get("/products/")
 async def get_products(
         request: Request,
         name: str,
         session: Session = Depends((get_db))):
+    # TODO: prefetch данных по item
     query = select(Product) \
                 .where(Product.clear_name.like('%{}%'.format(clear(name)))) \
                 .order_by(Product.clear_name)
@@ -226,7 +225,6 @@ async def quick_add_product(
 
 
 # DELETE product
-# TODO: Отдавать HTML в ответе
 @app.delete("/products/{product_id}")
 async def delete_product(
         product_id: int,
@@ -238,7 +236,7 @@ async def delete_product(
     session.commit()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return product      # TODO: Отдавать HTML в ответе
 
 
 # POST products
@@ -374,7 +372,6 @@ async def update_item(
 
 
 # DELETE item
-# TODO: Отдавать HTML в ответе
 @app.delete("/items/{item_id}")
 async def delete_item(item_id: int, request: Request, session: Session = Depends((get_db))):
     query = select(Item).where(Item.id == item_id)
@@ -383,4 +380,4 @@ async def delete_item(item_id: int, request: Request, session: Session = Depends
     session.commit()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    return item
+    return item     # TODO: Отдавать HTML в ответе
