@@ -57,14 +57,14 @@ class Product(SQLModel, table=True):
     clear_name: str
     categoty_id: Optional[int] = Field(default=None, foreign_key="category.id")
     category: Optional[Category] = Relationship()
-    items: 'Item' = Relationship()
+    items: 'Item' = Relationship(back_populates="product")
 
 
 class Item(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     description: Optional[str]
     product_id: int = Field(default=None, foreign_key="product.id")
-    product: Product = Relationship()
+    product: Product = Relationship(back_populates="items")
 
 
 @app.on_event("startup")
@@ -99,18 +99,6 @@ async def index(request: Request, session: Session = Depends((get_db))):
     }
     return templates.TemplateResponse('index.html', context)
 
-
-# PRODUCTS
-# TODO: Разобраться с name в /products/ и /products/search, нужно чтобы проставлялся url
-@app.get("/products/search", response_class=HTMLResponse)
-async def product_search(
-        request: Request,
-        session: Session = Depends((get_db))):
-    query = select(Product).order_by(Product.clear_name)
-    products = session.exec(query).all()
-    context = {"request": request, "products": products}
-    return templates.TemplateResponse('search.html', context)
-
 #
 # Categories
 #
@@ -119,27 +107,31 @@ async def product_search(
 # Products
 #
 
-# GET products
 @app.get("/products/")
 async def get_products(
         request: Request,
-        name: str,
+        name: Optional[str] = '',
         session: Session = Depends((get_db))):
+    """Список продуктов с поиском"""
     # TODO: prefetch данных по item
-    query = select(Product) \
+    if name:
+        query = select(Product, Item).join(Item, isouter=True) \
                 .where(Product.clear_name.like('%{}%'.format(clear(name)))) \
                 .order_by(Product.clear_name)
+    else:
+        query = select(Product, Item).join(Item, isouter=True) \
+                .order_by(Product.clear_name)
     products = session.exec(query).all()
-    exists = session.exec(select(Product) \
+    product_exists = session.exec(select(Product) \
                           .where(Product.name == name)).first()
 
     context = {
         "request": request,
         "products": products,
         "name": name,
-        "exists": exists
+        "exists": product_exists
     }
-    return templates.TemplateResponse('partials/search_form.html', context)
+    return templates.TemplateResponse('search.html', context)
 
  
 # GET product
@@ -154,7 +146,8 @@ async def get_product(
 
     context = {
         "request": request,
-        "product": product
+        "product": product,
+        "item": product.items
     }
     return templates.TemplateResponse('partials/product.html', context)
 
@@ -199,11 +192,13 @@ async def update_product(
 
     context = {
         "request": request,
-        "product": product
+        "product": product,
+        "item": product.items
     }
     return templates.TemplateResponse('partials/product.html', context)
 
 # POST product
+# TODO: Добавить HX-Redirect после успешного добавления продукта
 @app.post("/products/quick_add", response_class=HTMLResponse)
 async def quick_add_product(
         request: Request,
@@ -215,13 +210,15 @@ async def quick_add_product(
     session.commit()
     session.refresh(product)
 
-    query = select(Product).where(Product.clear_name.like('%{}%'.format(clear_name)))
+    query = select(Product, Item).join(Item, isouter=True) \
+            .where(Product.clear_name.like('%{}%'.format(clear_name))) \
+            .order_by(Product.clear_name)
     products = session.exec(query).all()
     context = {
         "request": request,
         "products": products
     }
-    return templates.TemplateResponse('partials/products.html', context)
+    return templates.TemplateResponse('search.html', context)
 
 
 # DELETE product
@@ -253,7 +250,8 @@ async def product_needed(
     product = session.get(Product, product_id)
     context = {
         "request": request,
-        "product": product
+        "product": product,
+        "item": item
     }
     return templates.TemplateResponse('partials/product.html', context)
 
@@ -299,17 +297,6 @@ async def create_item(
         "item": item
     }
     return templates.TemplateResponse('partials/item.html', context)
-
-
-# GET items
-# TODO: Удалить метод если не нужен
-@app.get("/items/")
-async def get_items(
-        request: Request,
-        session: Session = Depends((get_db))):
-    query = select(Item)
-    items = session.exec(query).all()
-    return items
 
 
 # GET item

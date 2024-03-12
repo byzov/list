@@ -1,10 +1,10 @@
 <li id="product-{{ product.id }}"
-    {% if product.items %}
+    {% if item %}
     class="smooth flex text-lg bg-green-100 border-green-300 border items-center justify-between bg-gray-100 p-3 rounded-lg mb-2"
     {% else %}
     class="smooth flex text-lg border items-center justify-between bg-gray-100 p-3 rounded-lg mb-2"
     {% endif %}>
-    <span {% if product.items %}
+    <span {% if item %}
     class="w-full block added"
     hx-post="/products/notneed"
     hx-vals='{"product_id": {{ product.id }} }'

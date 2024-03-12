@@ -4,17 +4,18 @@
                hx-get="/products/"
                hx-target="#products"
                hx-select="#products"
-               hx-trigger="keyup delay:250ms changed"
+               hx-trigger="keyup delay:200ms changed"
                hx-on::before-request="htmx.trigger('#searchInput', 'htmx:abort');"
                hx-on:keyup="show_x_button()"
                hx-swap="innerHTML"
+               hx-push-url="true"
                autocomplete="off"
                type="text"
                name="name"
                value="{{ name }}"
                placeholder="Фильтр по названию..."
                class="w-full border border-gray-300 px-3 py-2 mr-10 rounded-lg focus:outline-none focus:ring focus:border-blue-500">
-        <button class="clear-icon text-gray-500 hidden"
+        <button class="clear-icon text-gray-500 {% if not name %}hidden{% endif %}"
                 hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup'); htmx.find('#searchInput').focus()">
             <i data-feather="x" class="h-5 w-5"></i>
         </button>
