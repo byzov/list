@@ -1,12 +1,12 @@
 {% if name and not exists %}
-    <form id="itemForm"
-          hx-post="/products/quick_add"
-          hx-swap="outerHTML"
-          hx-target="#products"
-          hx-trigger="submit">
-        <input id="searchInput" type="hidden" name="name" value="{{ name }}">
-        <button class="mb-5 py-2 px-4 bg-blue-500 text-white rounded-lg w-full">Добавить</button>
-    </form>
+<form id="itemForm"
+      hx-post="/products/quick_add"
+      hx-swap="outerHTML"
+      hx-target="#products"
+      hx-trigger="submit">
+    <input id="searchInput" type="hidden" name="name" value="{{ name }}">
+    <button class="mb-5 py-2 px-4 bg-blue-500 text-white rounded-lg w-full">Добавить</button>
+</form>
 {% endif %}
 <ul>
     {% for product in products %}

@@ -14,12 +14,12 @@
                value="{{ name }}"
                placeholder="Фильтр по названию..."
                class="w-full border border-gray-300 px-3 py-2 mr-10 rounded-lg focus:outline-none focus:ring focus:border-blue-500">
-            <button class="clear-icon text-gray-500 hidden"
-                    hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup'); htmx.find('#searchInput').focus()">
-                <i data-feather="x" class="h-5 w-5"></i>
-            </button>
+        <button class="clear-icon text-gray-500 hidden"
+                hx-on:click="htmx.find('#searchInput').value = ''; htmx.trigger('#searchInput', 'keyup'); htmx.find('#searchInput').focus()">
+            <i data-feather="x" class="h-5 w-5"></i>
+        </button>
     </div>
     <div id="products">
-      {% include 'partials/products.html' with context %}
+        {% include 'partials/products.html' with context %}
     </div>
 </div>

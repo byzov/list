@@ -16,15 +16,15 @@
         {% block css %}{% endblock %}
         <style>.container { max-width: 600px;}</style>
         <script>
-        function redirectTo(url) {
-            window.location.href = url;
-        }
+            function redirectTo(url) {
+                window.location.href = url;
+            }
 
-        function setFocus(el) {
-            const end = el.value.length;
-            el.setSelectionRange(end, end);
-            el.focus();
-        }
+            function setFocus(el) {
+                const end = el.value.length;
+                el.setSelectionRange(end, end);
+                el.focus();
+            }
         </script>
     </head>
     <body hx-ext="morphdom-swap" class="p-5 md:bg-gray-200 text-gray-700">
@@ -33,10 +33,10 @@
         </div>
         {% block javascript %}{% endblock %}
         <script>
-    feather.replace();
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        feather.replace();
-    });
+            feather.replace();
+            document.body.addEventListener('htmx:afterSwap', function(event) {
+                feather.replace();
+            });
         </script>
     </body>
 </html>

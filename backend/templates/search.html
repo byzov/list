@@ -1,14 +1,14 @@
 {% extends "_layout.html" %}
 {% block main_content %}
-    <a onclick="redirectTo('/')"
-       class="mb-5 py-2 pr-3 rounded-lg inline-block cursor-pointer">
-        <i data-feather="arrow-left" class="h-7 w-7"></i>
-    </a>
-    <h1 class="text-4xl font-bold mt-5 mb-7">Товары</h1>
-    {% include 'partials/search_form.html' with context %}
+<a onclick="redirectTo('/')"
+   class="mb-5 py-2 pr-3 rounded-lg inline-block cursor-pointer">
+    <i data-feather="arrow-left" class="h-7 w-7"></i>
+</a>
+<h1 class="text-4xl font-bold mt-5 mb-7">Товары</h1>
+{% include 'partials/search_form.html' with context %}
 {% endblock %}
 {% block css %}
-    <style>
+<style>
 
 .added { color: green; }
 
@@ -21,21 +21,21 @@
 }
 
 .smooth {
-      transition: all .1s ease-in;
+    transition: all .1s ease-in;
 }
-    </style>
+</style>
 {% endblock %}
 {% block javascript %}
 <script>
 
-  function show_x_button(event) {
-    const button = htmx.find("#search button");
-    if (htmx.find("#searchInput").value) {
-      htmx.removeClass(button, "hidden");
-    } else {
-      htmx.addClass(button, "hidden")
+    function show_x_button(event) {
+        const button = htmx.find("#search button");
+        if (htmx.find("#searchInput").value) {
+            htmx.removeClass(button, "hidden");
+        } else {
+            htmx.addClass(button, "hidden")
+        }
     }
-  }
 
 </script>
 {% endblock %}
