@@ -13,9 +13,14 @@ engine = create_engine(os.getenv("DATABASE_URL"), echo=True)
 templates = Jinja2Templates(directory="templates")
 
 
+# TODO: Написать unit-тесты
+# TODO: Написать end-to-end тесты
 # TODO: Отправлять с бэка событие обновить список если добавлен item
 # TODO: Добавить в очистку имени замену ё на е
 # TODO: Продумать индексы в таблицы
+# TODO: Сделать переходы между / и /products/
+# - [ ] Добавить тесты на GET /
+# - [ ] Добавить тесты на GET /products/
 
 # FEATURE: Категории
 # - [ ] Ошраничить добавление товаров с одним названием + категорией
@@ -153,6 +158,7 @@ async def get_product(
 
 
 # GET product form
+# TODO: Добавить класс inlist который будет содержать классы Tailwind
 @app.get("/products/{product_id}/edit")
 async def edit_product(
         product_id: int,
@@ -199,6 +205,7 @@ async def update_product(
 
 # POST product
 # TODO: Добавить HX-Redirect после успешного добавления продукта
+# TODO: Добавить вывод ошибки 400 при пустом названии товара
 @app.post("/products/quick_add", response_class=HTMLResponse)
 async def quick_add_product(
         request: Request,
@@ -229,14 +236,15 @@ async def delete_product(
         session: Session = Depends((get_db))):
     query = select(Product).where(Product.id == product_id)
     product = session.exec(query).first()
-    session.delete(product)
-    session.commit()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    session.delete(product)
+    session.commit()
     return product      # TODO: Отдавать HTML в ответе
 
 
 # POST products
+# TODO: Добавить класс inlist который будет содержать классы Tailwind
 @app.post("/products/needs", response_class=HTMLResponse)
 async def product_needed(
         request: Request,
@@ -281,23 +289,6 @@ async def product_notneed(
 # Items
 #
 
-# POST item
-@app.post("/items/", response_class=HTMLResponse)
-async def create_item(
-        request: Request,
-        text: str = Form(...),
-        session: Session = Depends((get_db))):
-    item = Item(text=text)
-    session.add(item)
-    session.commit()
-    session.refresh(item)
-
-    context = {
-        "request": request,
-        "item": item
-    }
-    return templates.TemplateResponse('partials/item.html', context)
-
 
 # GET item
 @app.get("/items/{item_id}")
@@ -317,54 +308,13 @@ async def get_item(
     return templates.TemplateResponse('partials/item.html', context)
 
 
-# GET item
-@app.get("/items/{item_id}/edit", response_class=HTMLResponse)
-async def form_item(
-        item_id: int,
-        request: Request,
-        session: Session = Depends((get_db))):
-    item = session.get(Item, item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    context = {
-        "request": request,
-        "item": item
-    }
-    return templates.TemplateResponse('partials/item_form.html', context)
-
-
-# PUT item
-@app.patch("/items/{item_id}", response_class=HTMLResponse)
-async def update_item(
-        item_id: int,
-        request: Request,
-        text: str = Form(...),
-        session: Session = Depends((get_db))):
-    item = session.get(Item, item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    item.text = text
-
-    session.add(item)
-    session.commit()
-    session.refresh(item)
-    
-    context = {
-        "request": request,
-        "item": item
-    }
-    return templates.TemplateResponse('partials/item.html', context)
-
-
 # DELETE item
 @app.delete("/items/{item_id}")
 async def delete_item(item_id: int, request: Request, session: Session = Depends((get_db))):
     query = select(Item).where(Item.id == item_id)
     item = session.exec(query).first()
-    session.delete(item)
-    session.commit()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
+    session.delete(item)
+    session.commit()
     return item     # TODO: Отдавать HTML в ответе

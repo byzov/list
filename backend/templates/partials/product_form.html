@@ -4,7 +4,7 @@
     {% else %}
     hx-on::load="setFocus( htmx.find(event.detail.elt, '#nameInput') )"
     {% endif %}
-    class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}bg-green-100 border-green-300 border{% endif %}">
+    class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}inlist bg-green-100 border-green-300 border{% endif %}">
     <form id="productForm"
           hx-patch="/products/{{ product.id }}"
           hx-swap="outerHTML"
