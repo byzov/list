@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
 
-from app.main import Item, Product, app, get_db, clear
+from .main import Item, Product, app, get_db, clear
 
 client = TestClient(app)
 
@@ -65,7 +65,7 @@ def test_post_products_needs_200(session: Session, client: TestClient):
     session.refresh(product_1)
 
     # Запрос
-    responce = client.post(f"/products/needs", data={"product_id": product_1.id})
+    responce = client.post("/products/needs", data={"product_id": product_1.id})
     parser = soup(responce.text, 'html.parser')
 
     # Проверка
@@ -91,7 +91,7 @@ def test_post_products_notneed_200(session: Session, client: TestClient):
     session.commit()
 
     # Запрос
-    responce = client.post(f"/products/notneed", data={"product_id": product_1.id})
+    responce = client.post("/products/notneed", data={"product_id": product_1.id})
     parser = soup(responce.text, 'html.parser')
 
     # Проверка
@@ -150,12 +150,12 @@ def test_get_product_200(session: Session, client: TestClient):
 
 
 def test_get_product_404(session: Session, client: TestClient):
-    responce = client.get(f"/products/123")
+    responce = client.get("/products/123")
     assert responce.status_code == 404
 
 
 def test_delete_product_404(session: Session, client: TestClient):
-    responce = client.delete(f"/products/123")
+    responce = client.delete("/products/123")
     assert responce.status_code == 404
 
 
@@ -172,11 +172,11 @@ def test_delete_product_200(session: Session, client: TestClient):
 
     # Проверка
     assert responce.status_code == 200
-    assert session.get(Product, product_1.id) == None
+    assert session.get(Product, product_1.id) is None
 
 
 def test_delete_item_404(session: Session, client: TestClient):
-    responce = client.delete(f"/items/123")
+    responce = client.delete("/items/123")
     assert responce.status_code == 404
 
 
@@ -198,11 +198,11 @@ def test_delete_item_200(session: Session, client: TestClient):
 
     # Проверка
     assert responce.status_code == 200
-    assert session.get(Item, item_1.id) == None
+    assert session.get(Item, item_1.id) is None
 
 
 def test_edit_product_404(session: Session, client: TestClient):
-    responce = client.get(f"/products/123")
+    responce = client.get("/products/123")
     assert responce.status_code == 404
 
 
@@ -259,7 +259,7 @@ def test_edit_product_in_list_200(session: Session, client: TestClient):
 
 
 def test_get_item_404(session: Session, client: TestClient):
-    responce = client.get(f"/items/123")
+    responce = client.get("/items/123")
     assert responce.status_code == 404
 
 
@@ -288,7 +288,7 @@ def test_get_item_200(session: Session, client: TestClient):
 
 
 def test_patch_product_404(session: Session, client: TestClient):
-    responce = client.patch(f"/products/123",
+    responce = client.patch("/products/123",
                             data={"name": "Тестовый товар", "description": "Тестовый комментарий"})
     assert responce.status_code == 404
 

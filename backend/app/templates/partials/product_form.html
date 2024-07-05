@@ -1,9 +1,5 @@
 <li id="product-{{ product.id }}"
-    {% if product.items %}
-    hx-on::load="setFocus( htmx.find(event.detail.elt, '#descriptionInput') )"
-    {% else %}
-    hx-on::load="setFocus( htmx.find(event.detail.elt, '#nameInput') )"
-    {% endif %}
+    {% if product.items %} hx-on::load="setFocus( htmx.find(event.detail.elt, '#descriptionInput') )" {% else %} hx-on::load="setFocus( htmx.find(event.detail.elt, '#nameInput') )" {% endif %}
     class="flex items-center justify-between bg-gray-100 rounded-lg border mb-2 {% if product.items %}inlist bg-green-100 border-green-300 border{% endif %}">
     <form id="productForm"
           hx-patch="/products/{{ product.id }}"
@@ -18,13 +14,13 @@
                value="{{ product.name }}"
                class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg">
         {% if product.items %}
-        <input id="descriptionInput"
-               autocomplete="off"
-               type="text"
-               name="description"
-               placeholder="Заметка для списка покупок"
-               value="{% if product.items.description %}{{ product.items.description }}{% endif %}"
-               class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg">
+            <input id="descriptionInput"
+                   autocomplete="off"
+                   type="text"
+                   name="description"
+                   placeholder="Заметка для списка покупок"
+                   value="{% if product.items.description %}{{ product.items.description }}{% endif %}"
+                   class="px-3 py-2 my-2 bg-transparent rounded-lg focus:outline-none focus:ring w-full text-lg">
         {% endif %}
         <div class="flex m-2">
             <button class="flex-auto py-2 px-4 bg-green-500 text-white rounded-lg mr-2">Сохранить</button>
@@ -32,9 +28,7 @@
                     hx-trigger="click"
                     hx-target="#product-{{ product.id }}"
                     hx-swap="outerHTML"
-                    class="flex-auto py-2 px-4 bg-blue-500 text-white rounded-lg mr-2">
-                Отмена
-            </button>
+                    class="flex-auto py-2 px-4 bg-blue-500 text-white rounded-lg mr-2">Отмена</button>
             <button hx-delete="/products/{{ product.id }}"
                     hx-swap="delete"
                     hx-trigger="click"

@@ -1,19 +1,18 @@
 {% extends "_layout.html" %}
 {% block main_content %}
-<h1 class="text-4xl font-bold mt-5 mb-7">Список покупок</h1>
-<ul id="items" class="space-y-3 pb-20">
-    {% for item in items %}
-    {% include 'partials/item.html' with context %}
-    {% endfor %}
-</ul>
-<button onclick="redirectTo('/products/')"
-        class="fixed md:relative w-24 bottom-7 md:-bottom-5 left-1/2 transform -translate-x-1/2 py-2 px-4 bg-blue-500 text-white rounded-lg">
-    <i data-feather="plus" class="h-8 w-full"></i>
-</button>
+    <h1 class="text-4xl font-bold mt-5 mb-7">Список покупок</h1>
+    <ul id="items" class="space-y-3 pb-20">
+        {% for item in items %}
+            {% include 'partials/item.html' with context %}
+        {% endfor %}
+    </ul>
+    <button onclick="redirectTo('/products/')"
+            class="fixed md:relative w-24 bottom-7 md:-bottom-5 left-1/2 transform -translate-x-1/2 py-2 px-4 bg-blue-500 text-white rounded-lg">
+        <i data-feather="plus" class="h-8 w-full"></i>
+    </button>
 {% endblock %}
-
 {% block css %}
-<style>
+    <style>
 .delete {
     text-decoration: line-through;
 }
@@ -28,11 +27,10 @@
     transition: all .3s ease-out;
 }
 
-</style>
+    </style>
 {% endblock %}
-
 {% block javascript %}
-<script>
+    <script>
     // Слушать события после срабатывания hx-trigger
     document.body.addEventListener('htmx:confirm', function(event) {
         const item = event.detail.elt;
@@ -64,5 +62,5 @@
         }
     });
 
-</script>
+    </script>
 {% endblock %}

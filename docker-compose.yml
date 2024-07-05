@@ -12,6 +12,9 @@ services:
       - DATABASE_URL=sqlite:///./app.db
     networks:
       - app-network
+    command:
+      /start-reload.sh
+
 
 networks:
   app-network:
