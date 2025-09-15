@@ -2,12 +2,11 @@ import pytest
 
 from bs4 import BeautifulSoup as soup
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, SQLModel, create_engine, select
 from sqlmodel.pool import StaticPool
 
 from .main import Item, Product, app, get_db, clear
 
-client = TestClient(app)
 
 # TODO: Написать тесты
 # - [ ] POST /products/quick_add return many
@@ -28,27 +27,45 @@ client = TestClient(app)
 # Фикстуры
 #
 
-@pytest.fixture(name="session")
-def session_fixture():
+@pytest.fixture(name='test_engine', scope='session')
+def engine_fixtures():
+    """Фмкстура для engine с областью видимости сессии"""
     engine = create_engine(
-        "sqlite://", connect_args={"check_same_thread": False},
-        poolclass=StaticPool
+        'sqlite://',
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=True
     )
     SQLModel.metadata.create_all(engine)
-    with Session(engine) as session:
+    yield engine
+    engine.dispose() # Закрытие коннекта
+
+
+@pytest.fixture(name="session")
+def session_fixture(test_engine):
+    with Session(test_engine) as session:
         yield session
 
 
 @pytest.fixture(name="client")
-def client_fixture(session: Session):  
+def client_fixture(test_engine):  
     def get_db_override():  
-        return session
+        with Session(test_engine) as session:
+            yield session
 
     app.dependency_overrides[get_db] = get_db_override  
 
     client = TestClient(app)  
     yield client  
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def clean_db(test_engine):
+    """Очистка базы перед каждым тестом"""
+    SQLModel.metadata.drop_all(test_engine)
+    SQLModel.metadata.create_all(test_engine)
+    yield
 
 
 #
@@ -172,7 +189,8 @@ def test_delete_product_200(session: Session, client: TestClient):
 
     # Проверка
     assert responce.status_code == 200
-    assert session.get(Product, product_1.id) is None
+    st = select(Product).where(Product.id == product_1.id)
+    assert session.exec(st).first() is None
 
 
 def test_delete_item_404(session: Session, client: TestClient):
@@ -198,7 +216,8 @@ def test_delete_item_200(session: Session, client: TestClient):
 
     # Проверка
     assert responce.status_code == 200
-    assert session.get(Item, item_1.id) is None
+    st = select(Item).where(Item.id == item_1.id)
+    assert session.exec(st).first() is None
 
 
 def test_edit_product_404(session: Session, client: TestClient):
